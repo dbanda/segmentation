@@ -28,7 +28,7 @@ class AdeSegDataLayer:
         # config
         # params = eval(self.param_str)
         params =  {'seed': 1337, 'split': '', 'mean': (109.5388, 118.6897, 124.6901)}
-        self.ade_dir = '/Users/dalitsobanda/Downloads/ADEChallengeData2016' # add the path to the dataset
+        self.ade_dir = './ADEChallengeData2016' # add the path to the dataset
         self.split = params['split']
         self.split_dir = '~/Downloads/ADEChallengeData2016/images/training' # add path to the split files
         self.mean = np.array(params['mean'])

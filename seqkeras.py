@@ -1,3 +1,16 @@
+# dilatedNet
+
+# Please use Keras version 2.0.3 and tf 1.0.0 otherwise bad things may
+# happen
+
+# Download training data http://data.csail.mit.edu/places/ADEchallenge/ADEChallengeData2016.zip 
+
+# Basically, predictions are a pixelwise output in 150 classes. The classes
+# are described in ./ADEChallengeData/objectinfo150.txt. Each pixel is 
+# classified as a one hot vector into one of the 150 classes.
+
+
+
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Activation, Flatten
 from keras.layers import *
@@ -6,7 +19,9 @@ from PIL import Image
 from keras import optimizers
 import numpy as np
 import ade_layers
+import random
 
+# implemtation of dilatedNet in keras
 model = Sequential()
 model.add(Convolution2D(64, kernel_size=(3,3), activation='relu', input_shape=(3,384,384), padding='same'))
 # model.add(Convolution2D(64, 3, 3, activation='relu'))
@@ -83,7 +98,7 @@ Y_train = []
 
 def imTo3oneHot(im):
     onehot = to_categorical(im, 151)
-    print("onehot",onehot.shape)
+    # print("onehot",onehot.shape)
 
 
     return onehot
@@ -93,8 +108,8 @@ def showOneHot(onehot):
     print("imgsize",arr.size)
     im = Image.fromarray(np.uint8(arr))
     im.show()
-
-for i in range(2,3):
+NUM_TRAIN=10
+for i in range(2,NUM_TRAIN):
     X_train.append(a.load_image(i))
     Y_train.append(imTo3oneHot(a.load_label(i)))
     
@@ -106,17 +121,24 @@ print(model.summary())
 model.compile(loss='categorical_crossentropy',
               optimizer='adam',
               metrics=['accuracy'])
-print("now training")
+
 # dummy_input = np.ones((1, 3, 384, 384))
 # For TensorFlow dummy_input = np.ones((32, 12, 12, 3))
 # preds = model.predict(dummy_input)
 # print(preds.shape)
+print("now training")
 # model.fit(X_train, Y_train, 
-#           batch_size=1, nb_epoch=10, verbose=1)
+#           batch_size=10, nb_epoch=10, verbose=1)
 
 
-# x = X_train[0]
-# y = Y_train[0]
-preds = model.predict(X_train)
+# make prediction on first 5 for testing
+preds = model.predict(X_train[:5])
 print(preds.shape)
-showOneHot(preds[0])
+
+#pick random test image to display
+i = random.randint(0,5)
+x = X_train[i].reshape((384,384))
+
+im = Image.fromarray(np.uint8(x))
+im.show()
+showOneHot(preds[i])
