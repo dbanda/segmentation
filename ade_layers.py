@@ -94,7 +94,13 @@ class AdeSegDataLayer:
         - transpose to channel x height x width order
         """
         im = Image.open('{}/images/training/ADE_train_{:08d}.jpg'.format(self.ade_dir, idx))
+        width, height = im.size
+        if width < 384 or height <384:
+            # if this image is too small to be cropped skip it
+            return self.load_image(idx+1,show)
+
         ## crop to 384*384
+
         im = im.crop((0,0,384,384))
         if show:
             im.show()
@@ -114,6 +120,10 @@ class AdeSegDataLayer:
         The leading singleton dimension is required by the loss.
         """
         im = Image.open('{}/annotations/training/ADE_train_{:08d}.png'.format(self.ade_dir, idx))
+        width, height = im.size
+        if width < 384 or height <384:
+            # if this image is too small to be cropped skip it
+            return self.load_label(idx+1)
         im = im.crop((0,0,384,384))
         if show:
             im.show()
