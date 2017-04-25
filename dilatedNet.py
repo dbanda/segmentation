@@ -23,48 +23,41 @@ import random
 
 # implemtation of dilatedNet in keras
 model = Sequential()
-model.add(Convolution2D(64, kernel_size=(3,3), activation='relu', input_shape=(3,384,384), padding='same'))
-# model.add(Convolution2D(64, 3, 3, activation='relu'))
-# model.add(Convolution2D(64, 3, 3, activation='relu', input_shape=(3,512,711)))
-# model.add(ZeroPadding2D(padding=(1, 1)))
-model.add(Convolution2D(64, kernel_size=(3,3), activation='relu', padding='same'))
-model.add(MaxPooling2D(padding='same', pool_size=(2,2), strides=(2, 2)))
-# model.add(ZeroPadding2D(padding=(1, 1)))
-model.add(Convolution2D(128, kernel_size=(3,3), activation='relu', padding='same'))
-# model.add(ZeroPadding2D(padding=(1, 1)))
-model.add(Convolution2D(128, kernel_size=(3,3), activation='relu', padding='same'))
-model.add(MaxPooling2D(padding='same', pool_size=(2,2), strides=(2, 2)))
-# model.add(ZeroPadding2D(padding=(1, 1)))
-model.add(Convolution2D(256, kernel_size=(3,3), activation='relu', padding='same'))
-# model.add(ZeroPadding2D(padding=(1, 1)))
-model.add(Convolution2D(256, kernel_size=(3,3), activation='relu', padding='same'))
-model.add(MaxPooling2D(padding='same', pool_size=(2,2), strides=(2, 2)))
-# model.add(ZeroPadding2D(padding=(1, 1)))
-model.add(Convolution2D(512, kernel_size=(3,3) , activation='relu', padding='same'))
-# model.add(ZeroPadding2D(padding=(1, 1)))
-model.add(Convolution2D(512, kernel_size=(3,3) , activation='relu', padding='same'))
-# model.add(ZeroPadding2D(padding=(1, 1)))
-model.add(Convolution2D(512, kernel_size=(3,3) , activation='relu', padding='same'))
-# model.add(ZeroPadding2D(padding=(1, 1)))
-model.add(Convolution2D(512, kernel_size=(3,3), activation='relu', padding='same'))
-# model.add(ZeroPadding2D(padding=(1, 1)))
-model.add(Convolution2D(512, kernel_size=(3,3) , activation='relu', padding='same'))
-# model.add(ZeroPadding2D(padding=(1, 1)))
-model.add(Convolution2D(512, kernel_size=(3,3) , activation='relu', padding='same'))
-# model.add(ZeroPadding2D(padding=(12, 12)))
-model.add(Convolution2D(4096, kernel_size=(7,7) , activation='relu', padding='same')) #dilation=4
 
-model.add(Dropout(0.5))
-model.add(Convolution2D(4096, kernel_size=(1,1), activation='relu', padding='same')) 
-model.add(Dropout(0.5))
-model.add(Convolution2D(151, kernel_size=(1,1), activation='relu', padding='same')) 
+# model.add(ZeroPadding2D((1, 1), input_shape=(input_width, input_height, 3)))
+model.add(Convolution2D(64, kernel_size=(3, 3), activation='relu', name='conv1_1', input_shape=(3,384, 384), padding='same' ))
+model.add(Convolution2D(64, kernel_size=(3, 3), activation='relu', name='conv1_2', padding='same'))
+model.add(MaxPooling2D((2, 2), strides=(2, 2)))
+
+model.add(Convolution2D(128, kernel_size=(3, 3), activation='relu', name='conv2_1',padding='same'))
+model.add(Convolution2D(128, kernel_size=(3, 3), activation='relu', name='conv2_2',padding='same'))
+model.add(MaxPooling2D((2, 2), strides=(2, 2)))
+
+model.add(Convolution2D(256, kernel_size=(3, 3), activation='relu', name='conv3_1',padding='same'))
+model.add(Convolution2D(256, kernel_size=(3, 3), activation='relu', name='conv3_2',padding='same'))
+model.add(Convolution2D(256, kernel_size=(3, 3), activation='relu', name='conv3_3',padding='same'))
+model.add(MaxPooling2D((2, 2), strides=(2, 2)))
+
+model.add(Convolution2D(512, kernel_size=(3, 3), activation='relu', name='conv4_1',padding='same'))
+model.add(Convolution2D(512, kernel_size=(3, 3), activation='relu', name='conv4_2',padding='same'))
+model.add(Convolution2D(512, kernel_size=(3, 3), activation='relu', name='conv4_3',padding='same'))
+
+model.add(Convolution2D(512, kernel_size=(3,3) , dilation_rate=2, activation='relu', name="conv5_1",padding='same'))
+model.add(Convolution2D(512, kernel_size=(3,3),dilation_rate=2, activation='relu', name="conv5_2",padding='same'))
+model.add(Convolution2D(512, kernel_size=(3,3),dilation_rate=2 , activation='relu', name="conv5_3",padding='same'))
+
+model.add(Convolution2D(4096, kernel_size=(7,7) ,dilation_rate=4, activation='relu', name="fc6", padding='same')) 
+# model.add(Dropout(0.5))
+model.add(Convolution2D(4096, kernel_size=(1,1), activation='relu', name="fc7",padding='same')) 
+# model.add(Dropout(0.5))
+model.add(Convolution2D(151, kernel_size=(1,1), activation='linear', name='fc-final',padding='same')) 
 # c =Convolution2D(151, kernel_size=(1,1), activation='relu', padding='same')
 # model.add(Deconvolution2D(1,kernel_size=(1,1),strides=2  ,padding='same')) #group 151
 
-model.add(convolutional.Conv2DTranspose(151 , kernel_size=(16,16), strides=(8,8) , activation='relu', padding='same',dilation_rate=1)) #group 151
-model.add(Flatten())
+model.add(convolutional.Conv2DTranspose(151 , kernel_size=(16,16), strides=(8,8) , activation='linear', padding='same')) #group 151
+# model.add(Flatten())
 # model.add(Dense(384*384 * 151))
-model.add(Reshape((-1, 151)))
+model.add(Reshape((384*384, 151)))
 model.add(Activation('softmax'))
 
 
@@ -98,6 +91,7 @@ Y_train = []
 
 def imTo3oneHot(im):
     onehot = to_categorical(im, 151)
+    # showOneHot(onehot)
     print("onehot",onehot.shape)
 
 
@@ -105,13 +99,22 @@ def imTo3oneHot(im):
 def showOneHot(onehot):
     arr = onehot.argmax(1)
     arr = arr.reshape((384,384))
+    for i in range(384):
+        for j in range(384):
+            if arr[i][j] > 151:
+                raise ValueError
+
     print("imgsize",arr.size)
     im = Image.fromarray(np.uint8(arr))
     im.show()
 NUM_TRAIN=15
 for i in range(2,NUM_TRAIN):
-    X_train.append(a.load_image(i))
-    Y_train.append(imTo3oneHot(a.load_label(i)))
+    (x,x_name),(y,y_name) = a.load_image(), a.load_label()
+    if x !=None and y != None:
+        print (x_name, y_name)
+        X_train.append(x)
+        Y_train.append(imTo3oneHot(y))
+    a.forward()
     
 X_train = np.array(X_train)
 Y_train = np.array(Y_train)
@@ -132,13 +135,13 @@ for xi in X_train:
 print()
 for yi in Y_train:
     print(yi.shape)
-model.fit(X_train, Y_train, 
-          batch_size=NUM_TRAIN, nb_epoch=10, verbose=1)
+# model.fit(X_train, Y_train, 
+#           batch_size=NUM_TRAIN, epochs=30, verbose=1)
 
 
 # pick random test image to display
-i = random.randint(2,NUM_TRAIN)
-preds = model.predict(np.array([a.load_image(i,True)]))
+# i = random.randint(2,NUM_TRAIN)
+preds = model.predict(X_train[:1])
 print(preds.shape)
 showOneHot(preds[0]) #show prediction
-a.load_label(i,True) #show label
+    # a.load_label(i,True) #show label
