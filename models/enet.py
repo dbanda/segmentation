@@ -13,7 +13,7 @@ def transfer_weights(model, weights=None):
     return model
 
 
-def autoencoder(nc, input_shape,
+def autoencoder(nc, input_shape, output_shape,
                 loss='categorical_crossentropy',
                 optimizer='adadelta'):
     # data_shape = input_shape[0] * input_shape[1] if input_shape and None not in input_shape else None
@@ -28,6 +28,7 @@ def autoencoder(nc, input_shape,
     # print(K.int_shape(enet))
     enet = Reshape((data_shape, nc))(enet)  # TODO: need to remove data_shape for multi-scale training
     enet = Activation('softmax')(enet)
+    # enet = Reshape((-1,output_shape[0],output_shape[0],151))
     # print(enet, )
 
     model = Model(inputs=inp, outputs=enet)
