@@ -1,5 +1,5 @@
 from keras.layers import Activation, Reshape, Dropout
-from keras.layers import AtrousConvolution2D, Convolution2D, MaxPooling2D, ZeroPadding2D
+from keras.layers import AtrousConvolution2D, Convolution2D, MaxPooling2D, ZeroPadding2D, Conv2DTranspose
 from keras.models import Sequential
 
 
@@ -12,39 +12,40 @@ from keras.models import Sequential
 def get_frontend(input_width, input_height) -> Sequential:
     model = Sequential()
     # model.add(ZeroPadding2D((1, 1), input_shape=(input_width, input_height, 3)))
-    model.add(Convolution2D(64, (3, 3), activation='relu', name='conv1_1', input_shape=(3,input_width, input_height)))
-    model.add(Convolution2D(64, (3, 3), activation='relu', name='conv1_2'))
+    model.add(Convolution2D(64, (3, 3), activation='relu', name='conv1_1', input_shape=(3,input_width, input_height), padding='same'))
+    model.add(Convolution2D(64, (3, 3), activation='relu', name='conv1_2', padding='same'))
     model.add(MaxPooling2D((2, 2), strides=(2, 2)))
 
-    model.add(Convolution2D(128, (3, 3), activation='relu', name='conv2_1'))
-    model.add(Convolution2D(128, (3, 3), activation='relu', name='conv2_2'))
+    model.add(Convolution2D(128, (3, 3), activation='relu', name='conv2_1', padding='same'))
+    model.add(Convolution2D(128, (3, 3), activation='relu', name='conv2_2', padding='same'))
     model.add(MaxPooling2D((2, 2), strides=(2, 2)))
 
-    model.add(Convolution2D(256, (3, 3), activation='relu', name='conv3_1'))
-    model.add(Convolution2D(256, (3, 3), activation='relu', name='conv3_2'))
-    model.add(Convolution2D(256, (3, 3), activation='relu', name='conv3_3'))
+    model.add(Convolution2D(256, (3, 3), activation='relu', name='conv3_1', padding='same'))
+    model.add(Convolution2D(256, (3, 3), activation='relu', name='conv3_2', padding='same'))
+    model.add(Convolution2D(256, (3, 3), activation='relu', name='conv3_3', padding='same'))
     model.add(MaxPooling2D((2, 2), strides=(2, 2)))
 
-    model.add(Convolution2D(512, (3, 3), activation='relu', name='conv4_1'))
-    model.add(Convolution2D(512, (3, 3), activation='relu', name='conv4_2'))
-    model.add(Convolution2D(512, (3, 3), activation='relu', name='conv4_3'))
+    model.add(Convolution2D(512, (3, 3), activation='relu', name='conv4_1', padding='same'))
+    model.add(Convolution2D(512, (3, 3), activation='relu', name='conv4_2', padding='same'))
+    model.add(Convolution2D(512, (3, 3), activation='relu', name='conv4_3', padding='same'))
 
     # Compared to the original VGG16, we skip the next 2 MaxPool layers,
     # and go ahead with dilated convolutional layers instead
 
-    model.add(Convolution2D(512, (3, 3), dilation_rate=(2, 2), activation='relu', name='conv5_1'))
-    model.add(Convolution2D(512, (3, 3), dilation_rate=(2, 2), activation='relu', name='conv5_2'))
-    model.add(Convolution2D(512, (3, 3), dilation_rate=(2, 2), activation='relu', name='conv5_3'))
+    model.add(Convolution2D(512, (3, 3), dilation_rate=(2, 2), activation='relu', name='conv5_1', padding='same'))
+    model.add(Convolution2D(512, (3, 3), dilation_rate=(2, 2), activation='relu', name='conv5_2', padding='same'))
+    model.add(Convolution2D(512, (3, 3), dilation_rate=(2, 2), activation='relu', name='conv5_3', padding='same'))
 
     # Compared to the VGG16, we replace the FC layer with a convolution
 
-    model.add(Convolution2D(4096, (7, 7), dilation_rate=(4, 4), activation='relu', name='fc6'))
+    model.add(Convolution2D(4096, (7, 7), dilation_rate=(4, 4), activation='relu', name='fc6', padding='same'))
     model.add(Dropout(0.5))
-    model.add(Convolution2D(4096, (1, 1), activation='relu', name='fc7'))
+    model.add(Convolution2D(4096, (1, 1), activation='relu', name='fc7',padding='same'))
     model.add(Dropout(0.5))
     # Note: this layer has linear activations, not ReLU
     model.add(Convolution2D(151, (1, 1), activation='linear', name='fc-final'))
 
+    model.add(Conv2DTranspose(151 , kernel_size=(16,16), strides=(8,8) , activation='linear', padding='same',name="upsample"))
     # model.layers[-1].output_shape == (None, 16, 16, 21)
     return model
 
