@@ -92,9 +92,7 @@ Y_train = []
 def imTo3oneHot(im):
     onehot = to_categorical(im, 151)
     # showOneHot(onehot)
-    print("onehot",onehot.shape)
-
-
+    # print("onehot",onehot.shape)
     return onehot
 def showOneHot(onehot):
     arr = onehot.argmax(1)
@@ -107,21 +105,38 @@ def showOneHot(onehot):
     print("imgsize",arr.size)
     im = Image.fromarray(np.uint8(arr))
     im.show()
-NUM_TRAIN=15
-for i in range(2,NUM_TRAIN):
-    (x,x_name),(y,y_name) = a.load_image(), a.load_label()
-    if x !=None and y != None:
-        print (x_name, y_name)
-        X_train.append(x)
-        Y_train.append(imTo3oneHot(y))
-    a.forward()
+
+
+
+def my_generator():
+    idx = 0
+    NUM_TRAIN=150
+    batch_size = 20
+    X_train = []
+    Y_train = []
+    while True:
+        (x,x_name),(y,y_name) = a.load_image(), a.load_label()
+        if x !=None and y != None:
+            # print (x_name, y_name)
+            X_train.append(x)
+            Y_train.append(y.reshape((384*384,1)))
+            idx += 1
+            
+            a.forward()
+            if len(X_train) == batch_size:
+                (b_x,b_y) = np.array(X_train),np.array(Y_train)
+                X_train=[]
+                Y_train=[]
+                yield (b_x,b_y)
+        else:
+            a.forward()
     
 X_train = np.array(X_train)
 Y_train = np.array(Y_train)
 print(X_train.shape,Y_train.shape)
 print(model.summary())
 
-model.compile(loss='categorical_crossentropy',
+model.compile(loss='sparse_categorical_crossentropy',
               optimizer='adam',
               metrics=['accuracy'])
 
@@ -130,18 +145,18 @@ model.compile(loss='categorical_crossentropy',
 # preds = model.predict(dummy_input)
 # print(preds.shape)
 print("now training")
-for xi in X_train:
-    print(xi.shape)
-print()
-for yi in Y_train:
-    print(yi.shape)
+# for xi in X_train:
+#     print(xi.shape)
+# print()
+# for yi in Y_train:
+#     print(yi.shape)
 # model.fit(X_train, Y_train, 
 #           batch_size=NUM_TRAIN, epochs=30, verbose=1)
-
+model.fit_generator(my_generator(), epochs=1, verbose=1, steps_per_epoch=30)
 
 # pick random test image to display
 # i = random.randint(2,NUM_TRAIN)
-preds = model.predict(X_train[:1])
+preds = model.predict(np.array(a.load_image(show=True)))
 print(preds.shape)
 showOneHot(preds[0]) #show prediction
-    # a.load_label(i,True) #show label
+a.load_label(i,True) #show label

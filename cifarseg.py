@@ -29,13 +29,13 @@ nb_epoch = 1
 data_augmentation = True
 
 # input image dimensions
-img_rows, img_cols = 32,32
+img_rows, img_cols = 384,384
 
 # The CIFAR10 images are RGB.
 img_channels = 3
 
 # output dimensions
-mask_rows, mask_cols = 32,32
+mask_rows, mask_cols = 384,384
 
 # The data, shuffled and split between train and test sets:
 X_train = np.zeros((n_samples,3,img_rows, img_cols))
