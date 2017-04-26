@@ -22,20 +22,20 @@ from keras.preprocessing.image import (
     load_img, img_to_array,
     flip_axis)
 
-n_samples = 200
-batch_size = 1
+n_samples = 10
+batch_size = 10
 nb_classes = 151
 nb_epoch = 1
 data_augmentation = True
 
 # input image dimensions
-img_rows, img_cols = 64,64
+img_rows, img_cols = 32,32
 
 # The CIFAR10 images are RGB.
 img_channels = 3
 
 # output dimensions
-mask_rows, mask_cols = 64,64
+mask_rows, mask_cols = 32,32
 
 # The data, shuffled and split between train and test sets:
 X_train = np.zeros((n_samples,3,img_rows, img_cols))
@@ -50,13 +50,13 @@ for i in range(1,n_samples):
 
     train_img_fname = '{}/images/training/ADE_train_{:08d}.jpg'.format(ade_dir, i)
     img = load_img(train_img_fname, grayscale=False, target_size= (img_rows, img_cols))
-    img.show(title=train_img_fname)
+    # img.show(title=train_img_fname)
     x = img_to_array(img, data_format='channels_first')
     X_train[i] = x
 
     train_mask_fname = '{}/annotations/training/ADE_train_{:08d}.png'.format(ade_dir, i)
     img = load_img(train_mask_fname, grayscale=True, target_size= (mask_rows, mask_cols))
-    img.show(title=train_img_fname)
+    # img.show(title=train_img_fname)
     y = img_to_array(img, data_format='channels_first')
     y_train[i] = np_utils.to_categorical(y,nb_classes)
 
@@ -131,10 +131,12 @@ else:
                         epochs=nb_epoch,
                         validation_data=(X_test, y_test))
 
-    pred = model.predict(X_train[:1])
+    choice = np.random.choice(X_train.shape[0], 3)
+    pred = model.predict(X_train[choice])
     print(pred.shape)
-    arr = pred[0].argmax(1).reshape((mask_rows, mask_cols))
-    arr = np.uint8(arr)
-    im = Image.fromarray(arr)
-    im.show()
+    for i in range(pred.shape[0]):
+        arr = pred[i].argmax(1).reshape((mask_rows, mask_cols))
+        arr = np.uint8(arr)
+        im = Image.fromarray(arr)
+        im.show()
 
